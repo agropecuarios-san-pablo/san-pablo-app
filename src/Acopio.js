@@ -171,7 +171,8 @@ function Acopio({ usuario }) {
                 <td style={{ padding: 8 }}>{new Date(r.created_at).toLocaleDateString("es-CO")}</td>
                 <td style={{ padding: 8 }}>
                   <div style={{ display: "flex", gap: 6 }}>
-                    <button onClick={() => { setReciboActual(r); }} style={{ background: "#25D366", color: "#fff", border: "none", padding: "4px 10px", borderRadius: 6, cursor: "pointer", fontSize: 13 }}>WA</button>
+<button onClick={() => { setReciboActual(r); window.scrollTo(0, 0); }} style={{ background: "#2b6cb0", color: "#fff", border: "none", padding: "4px 10px", borderRadius: 6, cursor: "pointer", fontSize: 13 }}>Ver</button>
+<button onClick={() => { setReciboActual(r); setTimeout(() => compartirImagenWhatsApp(r), 500); }} style={{ background: "#25D366", color: "#fff", border: "none", padding: "4px 10px", borderRadius: 6, cursor: "pointer", fontSize: 13 }}>WA</button>
                     <button onClick={() => eliminarAcopio(r.id)} style={{ background: "#e53e3e", color: "#fff", border: "none", padding: "4px 10px", borderRadius: 6, cursor: "pointer", fontSize: 13 }}>Eliminar</button>
                   </div>
                 </td>
