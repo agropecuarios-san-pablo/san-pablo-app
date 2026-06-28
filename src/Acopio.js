@@ -9,6 +9,7 @@ function Acopio({ usuario }) {
   const [mensaje, setMensaje] = useState("");
   const [cargando, setCargando] = useState(false);
   const [busqueda, setBusqueda] = useState("");
+  const [busquedaRegistros, setBusquedaRegistros] = useState("");
   const [productorSeleccionado, setProductorSeleccionado] = useState(null);
   const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
   const [reciboActual, setReciboActual] = useState(null);
@@ -65,8 +66,27 @@ function Acopio({ usuario }) {
       const url = telefono ? `https://wa.me/57${telefono}` : `https://wa.me/`;
       window.open(url, "_blank");
     }
-  };return (
+  };
+
+  const registrosFiltrados = registros.filter(r => r.productor.toLowerCase().includes(busquedaRegistros.toLowerCase()));
+  const hoy = registros.filter(r => new Date(r.created_at).toDateString() === new Date().toDateString());
+  const kilosHoy = hoy.reduce((sum, r) => sum + parseFloat(r.kilos || 0), 0);
+  const totalHoy = hoy.reduce((sum, r) => sum + parseFloat(r.total || 0), 0);return (
     <div style={{ maxWidth: 700, margin: "40px auto", padding: 24 }}>
+      <div style={{ display: "flex", gap: 16, marginBottom: 24 }}>
+        <div style={{ flex: 1, background: "#1a5c38", color: "#fff", padding: 20, borderRadius: 12, textAlign: "center" }}>
+          <p style={{ margin: 0, fontSize: 13 }}>Kilos hoy</p>
+          <p style={{ margin: 0, fontSize: 26, fontWeight: "bold" }}>{kilosHoy.toFixed(1)} kg</p>
+        </div>
+        <div style={{ flex: 1, background: "#2b6cb0", color: "#fff", padding: 20, borderRadius: 12, textAlign: "center" }}>
+          <p style={{ margin: 0, fontSize: 13 }}>Total pagado hoy</p>
+          <p style={{ margin: 0, fontSize: 26, fontWeight: "bold" }}>${totalHoy.toLocaleString("es-CO")}</p>
+        </div>
+        <div style={{ flex: 1, background: "#744210", color: "#fff", padding: 20, borderRadius: 12, textAlign: "center" }}>
+          <p style={{ margin: 0, fontSize: 13 }}>Compras hoy</p>
+          <p style={{ margin: 0, fontSize: 26, fontWeight: "bold" }}>{hoy.length}</p>
+        </div>
+      </div>
       {reciboActual && (
         <div>
           <div ref={reciboRef} style={{ background: "#fff", padding: 24, borderRadius: 12, marginBottom: 16, border: "2px solid #1a5c38" }}>
@@ -133,7 +153,8 @@ function Acopio({ usuario }) {
       </div>
       <div style={{ background: "#fff", padding: 24, borderRadius: 12 }}>
         <h3>Registros recientes</h3>
-        {registros.length === 0 ? <p style={{ color: "#999" }}>No hay registros.</p> : (
+        <input placeholder="Buscar por nombre de productor..." value={busquedaRegistros} onChange={e => setBusquedaRegistros(e.target.value)} style={{ width: "100%", padding: 10, marginBottom: 12, borderRadius: 8, border: "1px solid #ccc", boxSizing: "border-box" }} />
+        {registrosFiltrados.length === 0 ? <p style={{ color: "#999" }}>No hay registros.</p> : (
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead><tr style={{ background: "#f5f5f5" }}>
               <th style={{ padding: 8, textAlign: "left" }}>Productor</th>
@@ -142,15 +163,17 @@ function Acopio({ usuario }) {
               <th style={{ padding: 8, textAlign: "left" }}>Fecha</th>
               <th style={{ padding: 8 }}></th>
             </tr></thead>
-            <tbody>{registros.map((r) => (
+            <tbody>{registrosFiltrados.map((r) => (
               <tr key={r.id} style={{ borderBottom: "1px solid #eee" }}>
                 <td style={{ padding: 8 }}>{r.productor}</td>
                 <td style={{ padding: 8 }}>{r.kilos}</td>
                 <td style={{ padding: 8 }}>${parseFloat(r.total).toLocaleString("es-CO")}</td>
                 <td style={{ padding: 8 }}>{new Date(r.created_at).toLocaleDateString("es-CO")}</td>
-                <td style={{ padding: 8, display: "flex", gap: 6 }}>
-                  <button onClick={() => { setReciboActual(r); }} style={{ background: "#25D366", color: "#fff", border: "none", padding: "4px 10px", borderRadius: 6, cursor: "pointer", fontSize: 13 }}>WA</button>
-                  <button onClick={() => eliminarAcopio(r.id)} style={{ background: "#e53e3e", color: "#fff", border: "none", padding: "4px 10px", borderRadius: 6, cursor: "pointer", fontSize: 13 }}>Eliminar</button>
+                <td style={{ padding: 8 }}>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button onClick={() => { setReciboActual(r); }} style={{ background: "#25D366", color: "#fff", border: "none", padding: "4px 10px", borderRadius: 6, cursor: "pointer", fontSize: 13 }}>WA</button>
+                    <button onClick={() => eliminarAcopio(r.id)} style={{ background: "#e53e3e", color: "#fff", border: "none", padding: "4px 10px", borderRadius: 6, cursor: "pointer", fontSize: 13 }}>Eliminar</button>
+                  </div>
                 </td>
               </tr>
             ))}</tbody>
