@@ -11,6 +11,8 @@ function Productores({ onVolver }) {
   const [mensaje, setMensaje] = useState("");
   const [importando, setImportando] = useState(false);
   const [editando, setEditando] = useState(null);
+  const [historial, setHistorial] = useState(null);
+  const [productorHistorial, setProductorHistorial] = useState(null);
   const archivoRef = useRef(null);
 
   useEffect(() => { cargarProductores(); }, []);
@@ -18,6 +20,13 @@ function Productores({ onVolver }) {
   const cargarProductores = async () => {
     const { data } = await supabase.from("productores").select("*").order("nombre");
     if (data) setLista(data);
+  };
+
+  const verHistorial = async (p) => {
+    setProductorHistorial(p);
+    const { data } = await supabase.from("acopios").select("*").eq("cedula", p.cedula).order("created_at", { ascending: false });
+    setHistorial(data || []);
+    window.scrollTo(0, 0);
   };
 
   const guardar = async () => {
@@ -34,19 +43,12 @@ function Productores({ onVolver }) {
   };
 
   const editarProductor = (p) => {
-    setEditando(p.id);
-    setNombre(p.nombre);
-    setCedula(p.cedula);
-    setTelefono(p.telefono || "");
-    setVereda(p.vereda || "");
-    setFinca(p.finca || "");
+    setEditando(p.id); setNombre(p.nombre); setCedula(p.cedula);
+    setTelefono(p.telefono || ""); setVereda(p.vereda || ""); setFinca(p.finca || "");
     window.scrollTo(0, 0);
   };
 
-  const cancelarEdicion = () => {
-    setEditando(null);
-    setNombre(""); setCedula(""); setTelefono(""); setVereda(""); setFinca("");
-  };
+  const cancelarEdicion = () => { setEditando(null); setNombre(""); setCedula(""); setTelefono(""); setVereda(""); setFinca(""); };
 
   const eliminar = async (id) => {
     if (!window.confirm("Seguro que deseas eliminar este productor?")) return;
@@ -72,9 +74,58 @@ function Productores({ onVolver }) {
       setImportando(false);
     };
     lector.readAsText(archivo);
-  };return (
+  };
+
+  const totalKilos = historial ? historial.reduce((sum, r) => sum + parseFloat(r.kilos || 0), 0) : 0;
+  const totalPagado = historial ? historial.reduce((sum, r) => sum + parseFloat(r.total || 0), 0) : 0;
+
+  return (
     <div style={{ maxWidth: 700, margin: "40px auto", padding: 24 }}>
       <h2 style={{ color: "#1a5c38" }}>Gestion de Productores</h2>
+
+      {historial && productorHistorial && (
+        <div style={{ background: "#fff", padding: 24, borderRadius: 12, marginBottom: 24, border: "2px solid #1a5c38" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+            <h3 style={{ margin: 0, color: "#1a5c38" }}>Historial: {productorHistorial.nombre}</h3>
+            <button onClick={() => { setHistorial(null); setProductorHistorial(null); }} style={{ padding: "6px 14px", background: "#ccc", border: "none", borderRadius: 8, cursor: "pointer" }}>Cerrar</button>
+          </div>
+          <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
+            <div style={{ flex: 1, background: "#1a5c38", color: "#fff", padding: 16, borderRadius: 10, textAlign: "center" }}>
+              <p style={{ margin: 0, fontSize: 12 }}>Total kilos</p>
+              <p style={{ margin: 0, fontSize: 22, fontWeight: "bold" }}>{totalKilos.toFixed(1)} kg</p>
+            </div>
+            <div style={{ flex: 1, background: "#2b6cb0", color: "#fff", padding: 16, borderRadius: 10, textAlign: "center" }}>
+              <p style={{ margin: 0, fontSize: 12 }}>Total pagado</p>
+              <p style={{ margin: 0, fontSize: 22, fontWeight: "bold" }}>${totalPagado.toLocaleString("es-CO")}</p>
+            </div>
+            <div style={{ flex: 1, background: "#744210", color: "#fff", padding: 16, borderRadius: 10, textAlign: "center" }}>
+              <p style={{ margin: 0, fontSize: 12 }}>Visitas</p>
+              <p style={{ margin: 0, fontSize: 22, fontWeight: "bold" }}>{historial.length}</p>
+            </div>
+          </div>
+          {historial.length === 0 ? <p style={{ color: "#999" }}>Este productor no tiene acopios registrados.</p> : (
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead><tr style={{ background: "#f5f5f5" }}>
+                <th style={{ padding: 8, textAlign: "left" }}>Fecha</th>
+                <th style={{ padding: 8, textAlign: "left" }}>Kilos</th>
+                <th style={{ padding: 8, textAlign: "left" }}>Precio/kg</th>
+                <th style={{ padding: 8, textAlign: "left" }}>Total</th>
+                <th style={{ padding: 8, textAlign: "left" }}>Observaciones</th>
+              </tr></thead>
+              <tbody>{historial.map((r) => (
+                <tr key={r.id} style={{ borderBottom: "1px solid #eee" }}>
+                  <td style={{ padding: 8 }}>{new Date(r.created_at).toLocaleDateString("es-CO")}</td>
+                  <td style={{ padding: 8 }}>{r.kilos} kg</td>
+                  <td style={{ padding: 8 }}>${parseFloat(r.precio_kilo).toLocaleString("es-CO")}</td>
+                  <td style={{ padding: 8 }}>${parseFloat(r.total).toLocaleString("es-CO")}</td>
+                  <td style={{ padding: 8 }}>{r.observaciones || "-"}</td>
+                </tr>
+              ))}</tbody>
+            </table>
+          )}
+        </div>
+      )}
+
       <div style={{ background: "#fff", padding: 24, borderRadius: 12, marginBottom: 24 }}>
         <h3>{editando ? "Editar productor" : "Nuevo productor"}</h3>
         <input placeholder="Nombre completo *" value={nombre} onChange={e => setNombre(e.target.value)} style={{ width: "100%", padding: 10, marginBottom: 12, borderRadius: 8, border: "1px solid #ccc", boxSizing: "border-box" }} />
@@ -88,12 +139,14 @@ function Productores({ onVolver }) {
         </div>
         {mensaje && <p style={{ marginTop: 12, textAlign: "center", color: mensaje.includes("Error") ? "red" : "green" }}>{mensaje}</p>}
       </div>
+
       <div style={{ background: "#fff", padding: 24, borderRadius: 12, marginBottom: 24 }}>
         <h3>Importar desde Excel</h3>
         <p style={{ color: "#666", marginBottom: 12 }}>Columnas requeridas: <strong>nombre, cedula, telefono, vereda, finca</strong>. Guarda el Excel como CSV primero.</p>
         <input type="file" accept=".csv" ref={archivoRef} onChange={importarCSV} style={{ display: "none" }} />
         <button onClick={() => archivoRef.current.click()} disabled={importando} style={{ width: "100%", padding: 12, background: "#2b6cb0", color: "#fff", border: "none", borderRadius: 8, fontSize: 16, cursor: "pointer" }}>{importando ? "Importando..." : "Seleccionar archivo CSV"}</button>
       </div>
+
       <div style={{ background: "#fff", padding: 24, borderRadius: 12 }}>
         <h3>Productores registrados ({lista.length})</h3>
         {lista.length === 0 ? <p style={{ color: "#999" }}>No hay productores.</p> : (
@@ -115,6 +168,7 @@ function Productores({ onVolver }) {
                 <td style={{ padding: 8 }}>{p.finca}</td>
                 <td style={{ padding: 8 }}>
                   <div style={{ display: "flex", gap: 6 }}>
+                    <button onClick={() => verHistorial(p)} style={{ background: "#1a5c38", color: "#fff", border: "none", padding: "4px 10px", borderRadius: 6, cursor: "pointer" }}>Historial</button>
                     <button onClick={() => editarProductor(p)} style={{ background: "#2b6cb0", color: "#fff", border: "none", padding: "4px 10px", borderRadius: 6, cursor: "pointer" }}>Editar</button>
                     <button onClick={() => eliminar(p.id)} style={{ background: "#e53e3e", color: "#fff", border: "none", padding: "4px 10px", borderRadius: 6, cursor: "pointer" }}>Eliminar</button>
                   </div>
