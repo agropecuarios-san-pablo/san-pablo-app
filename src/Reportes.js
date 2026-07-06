@@ -6,6 +6,7 @@ function Reportes() {
   const [fechaInicio, setFechaInicio] = useState("");
   const [fechaFin, setFechaFin] = useState("");
   const [filtrado, setFiltrado] = useState([]);
+  const [busqueda, setBusqueda] = useState("");
 
   useEffect(() => { cargarRegistros(); }, []);
 
@@ -18,6 +19,7 @@ function Reportes() {
     let resultado = registros;
     if (fechaInicio) resultado = resultado.filter(r => new Date(r.created_at) >= new Date(fechaInicio));
     if (fechaFin) resultado = resultado.filter(r => new Date(r.created_at) <= new Date(fechaFin + "T23:59:59"));
+    if (busqueda) resultado = resultado.filter(r => r.productor.toLowerCase().includes(busqueda.toLowerCase()));
     setFiltrado(resultado);
   };
 
@@ -52,6 +54,13 @@ function Reportes() {
     <div style={{ maxWidth: 900, margin: "40px auto", padding: 24 }}>
       <h2 style={{ color: "#1a5c38" }}>Reportes</h2>
       <div style={{ background: "#fff", padding: 24, borderRadius: 12, marginBottom: 24 }}>
+        <h3>Buscar productor</h3>
+        <input
+          placeholder="Escribe el nombre del productor..."
+          value={busqueda}
+          onChange={e => { setBusqueda(e.target.value); }}
+          style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid #ccc", boxSizing: "border-box", marginBottom: 12 }}
+        />
         <h3>Filtrar por fecha</h3>
         <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
           <div style={{ flex: 1 }}>
@@ -65,10 +74,11 @@ function Reportes() {
         </div>
         <div style={{ display: "flex", gap: 12 }}>
           <button onClick={filtrar} style={{ flex: 1, padding: 10, background: "#1a5c38", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer" }}>Filtrar</button>
-          <button onClick={() => { setFechaInicio(""); setFechaFin(""); setFiltrado(registros); }} style={{ flex: 1, padding: 10, background: "#ccc", border: "none", borderRadius: 8, cursor: "pointer" }}>Ver todo</button>
+          <button onClick={() => { setFechaInicio(""); setFechaFin(""); setBusqueda(""); setFiltrado(registros); }} style={{ flex: 1, padding: 10, background: "#ccc", border: "none", borderRadius: 8, cursor: "pointer" }}>Ver todo</button>
           <button onClick={exportarCSV} style={{ flex: 1, padding: 10, background: "#2b6cb0", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer" }}>Exportar Excel</button>
         </div>
       </div>
+
       <div style={{ display: "flex", gap: 16, marginBottom: 24 }}>
         <div style={{ flex: 1, background: "#1a5c38", color: "#fff", padding: 24, borderRadius: 12, textAlign: "center" }}>
           <p style={{ margin: 0, fontSize: 14 }}>Total Kilos</p>
@@ -83,6 +93,7 @@ function Reportes() {
           <p style={{ margin: 0, fontSize: 28, fontWeight: "bold" }}>{filtrado.length}</p>
         </div>
       </div>
+
       <div style={{ background: "#fff", padding: 24, borderRadius: 12, marginBottom: 24 }}>
         <h3>Resumen por productor</h3>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -108,6 +119,7 @@ function Reportes() {
           ))}</tbody>
         </table>
       </div>
+
       <div style={{ background: "#fff", padding: 24, borderRadius: 12 }}>
         <h3>Detalle completo</h3>
         <div style={{ overflowX: "auto" }}>

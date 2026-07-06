@@ -31,13 +31,13 @@ function App() {
 
   return (
     <div>
-      <nav style={{ background: "#1a5c38", padding: "12px 24px", display: "flex", justifyContent: "space-between" }}>
-        <div>
-          <button onClick={() => setPantalla("acopio")} style={{ marginRight: 8, padding: "8px 16px", borderRadius: 8, border: "none", cursor: "pointer", background: pantalla === "acopio" ? "#fff" : "#2d7a4f", color: pantalla === "acopio" ? "#1a5c38" : "#fff" }}>Acopio</button>
-          <button onClick={() => setPantalla("productores")} style={{ marginRight: 8, padding: "8px 16px", borderRadius: 8, border: "none", cursor: "pointer", background: pantalla === "productores" ? "#fff" : "#2d7a4f", color: pantalla === "productores" ? "#1a5c38" : "#fff" }}>Productores</button>
-          <button onClick={() => setPantalla("reportes")} style={{ padding: "8px 16px", borderRadius: 8, border: "none", cursor: "pointer", background: pantalla === "reportes" ? "#fff" : "#2d7a4f", color: pantalla === "reportes" ? "#1a5c38" : "#fff" }}>Reportes</button>
+      <nav style={{ background: "#1a5c38", padding: "10px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "nowrap", overflowX: "auto" }}>
+        <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+          <button onClick={() => setPantalla("acopio")} style={{ padding: "8px 12px", borderRadius: 8, border: "none", cursor: "pointer", background: pantalla === "acopio" ? "#fff" : "#2d7a4f", color: pantalla === "acopio" ? "#1a5c38" : "#fff", fontSize: 13, whiteSpace: "nowrap" }}>Acopio</button>
+          <button onClick={() => setPantalla("productores")} style={{ padding: "8px 12px", borderRadius: 8, border: "none", cursor: "pointer", background: pantalla === "productores" ? "#fff" : "#2d7a4f", color: pantalla === "productores" ? "#1a5c38" : "#fff", fontSize: 13, whiteSpace: "nowrap" }}>Productores</button>
+          <button onClick={() => setPantalla("reportes")} style={{ padding: "8px 12px", borderRadius: 8, border: "none", cursor: "pointer", background: pantalla === "reportes" ? "#fff" : "#2d7a4f", color: pantalla === "reportes" ? "#1a5c38" : "#fff", fontSize: 13, whiteSpace: "nowrap" }}>Reportes</button>
         </div>
-        <button onClick={cerrarSesion} style={{ padding: "8px 16px", borderRadius: 8, cursor: "pointer", background: "transparent", color: "#fff", border: "1px solid #fff" }}>Cerrar sesion</button>
+        <button onClick={cerrarSesion} style={{ padding: "8px 12px", borderRadius: 8, cursor: "pointer", background: "transparent", color: "#fff", border: "1px solid #fff", fontSize: 13, whiteSpace: "nowrap", flexShrink: 0, marginLeft: 8 }}>Cerrar sesión</button>
       </nav>
       {pantalla === "acopio" && <Acopio usuario={usuario} />}
       {pantalla === "productores" && <Productores onVolver={() => setPantalla("acopio")} />}
