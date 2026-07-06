@@ -58,7 +58,13 @@ function Reportes() {
         <input
           placeholder="Escribe el nombre del productor..."
           value={busqueda}
-          onChange={e => { setBusqueda(e.target.value); }}
+onChange={e => {
+  const valor = e.target.value;
+  setBusqueda(valor);
+  let resultado = registros;
+  if (valor) resultado = resultado.filter(r => r.productor.toLowerCase().includes(valor.toLowerCase()));
+  setFiltrado(resultado);
+}}
           style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid #ccc", boxSizing: "border-box", marginBottom: 12 }}
         />
         <h3>Filtrar por fecha</h3>
