@@ -11,6 +11,9 @@ function Productores({ onVolver }) {
   const [mensaje, setMensaje] = useState("");
   const [importando, setImportando] = useState(false);
   const [editando, setEditando] = useState(null);
+  const [historialAbierto, setHistorialAbierto] = useState(null);
+const [historialCompras, setHistorialCompras] = useState([]);
+const [cargandoHistorial, setCargandoHistorial] = useState(false);
   const [historial, setHistorial] = useState(null);
   const [productorHistorial, setProductorHistorial] = useState(null);
   const archivoRef = useRef(null);
