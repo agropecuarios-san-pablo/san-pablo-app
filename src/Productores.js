@@ -13,7 +13,7 @@ function Productores({ onVolver }) {
   const [editando, setEditando] = useState(null);
   const [historialAbierto, setHistorialAbierto] = useState(null);
 const [historialCompras, setHistorialCompras] = useState([]);
-const [cargandoHistorial, setCargandoHistorial] = useState(false);
+const [cargandoHistorial, setCargandoHistorial] = useState(false); // eslint-disable-line
   const [historial, setHistorial] = useState(null);
   const [productorHistorial, setProductorHistorial] = useState(null);
   const archivoRef = useRef(null);
