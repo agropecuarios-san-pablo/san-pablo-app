@@ -110,7 +110,7 @@ function Productores({ onVolver }) {
             </div>
             <div style={{ flex: 1, background: "#2b6cb0", color: "#fff", padding: 16, borderRadius: 10, textAlign: "center" }}>
               <p style={{ margin: 0, fontSize: 12 }}>Total pagado</p>
-              <p style={{ margin: 0, fontSize: 22, fontWeight: "bold" }}>${totalPagado.toLocaleString("es-CO")}</p>
+              <p style={{ margin: 0, fontSize: 22, fontWeight: "bold" }}>${totalDinero.toLocaleString("es-CO")}</p>
             </div>
             <div style={{ flex: 1, background: "#744210", color: "#fff", padding: 16, borderRadius: 10, textAlign: "center" }}>
               <p style={{ margin: 0, fontSize: 12 }}>Visitas</p>
