@@ -13,6 +13,7 @@ function Acopio({ usuario }) {
   const [productorSeleccionado, setProductorSeleccionado] = useState(null);
   const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
   const [reciboActual, setReciboActual] = useState(null);
+  const [editandoId, setEditandoId] = useState(null);
   const reciboRef = useRef(null);
 
   useEffect(() => { cargarProductores(); cargarRegistros(); }, []);
@@ -37,12 +38,42 @@ function Acopio({ usuario }) {
 
   const manejarCambio = (e) => { setForm({ ...form, [e.target.name]: e.target.value }); };
 
+  const editarAcopio = (r) => {
+    setEditandoId(r.id);
+    setBusqueda(r.productor);
+    setProductorSeleccionado({ nombre: r.productor, cedula: r.cedula, telefono: r.telefono, vereda: r.vereda, finca: r.finca });
+    setForm({ kilos: r.kilos, precio_kilo: r.precio_kilo, observaciones: r.observaciones || "" });
+    window.scrollTo(0, 0);
+  };
+
+  const cancelarEdicion = () => {
+    setEditandoId(null);
+    setBusqueda("");
+    setProductorSeleccionado(null);
+    setForm({ kilos: "", precio_kilo: "", observaciones: "" });
+    setMensaje("");
+  };
+
   const guardarAcopio = async () => {
     if (!productorSeleccionado || !form.kilos || !form.precio_kilo) { setMensaje("Selecciona un productor y completa los campos."); return; }
     setCargando(true);
-    const { data, error } = await supabase.from("acopios").insert([{ productor: productorSeleccionado.nombre, cedula: productorSeleccionado.cedula, telefono: productorSeleccionado.telefono, vereda: productorSeleccionado.vereda, finca: productorSeleccionado.finca, kilos: parseFloat(form.kilos), precio_kilo: parseFloat(form.precio_kilo), total: parseFloat(form.kilos) * parseFloat(form.precio_kilo), observaciones: form.observaciones, usuario_id: usuario.id }]).select();
-    if (error) { setMensaje("Error: " + error.message); }
-    else { setMensaje("Acopio registrado."); setReciboActual(data[0]); setForm({ kilos: "", precio_kilo: "", observaciones: "" }); setBusqueda(""); setProductorSeleccionado(null); cargarRegistros(); }
+    const datos = {
+      productor: productorSeleccionado.nombre, cedula: productorSeleccionado.cedula,
+      telefono: productorSeleccionado.telefono, vereda: productorSeleccionado.vereda,
+      finca: productorSeleccionado.finca, kilos: parseFloat(form.kilos),
+      precio_kilo: parseFloat(form.precio_kilo),
+      total: parseFloat(form.kilos) * parseFloat(form.precio_kilo),
+      observaciones: form.observaciones
+    };
+    if (editandoId) {
+      const { error } = await supabase.from("acopios").update(datos).eq("id", editandoId);
+      if (error) { setMensaje("Error: " + error.message); }
+      else { setMensaje("Acopio actualizado."); setEditandoId(null); setBusqueda(""); setProductorSeleccionado(null); setForm({ kilos: "", precio_kilo: "", observaciones: "" }); cargarRegistros(); }
+    } else {
+      const { data, error } = await supabase.from("acopios").insert([{ ...datos, usuario_id: usuario.id }]).select();
+      if (error) { setMensaje("Error: " + error.message); }
+      else { setMensaje("Acopio registrado."); setReciboActual(data[0]); setForm({ kilos: "", precio_kilo: "", observaciones: "" }); setBusqueda(""); setProductorSeleccionado(null); cargarRegistros(); }
+    }
     setCargando(false);
   };
 
@@ -71,7 +102,9 @@ function Acopio({ usuario }) {
   const registrosFiltrados = registros.filter(r => r.productor.toLowerCase().includes(busquedaRegistros.toLowerCase()));
   const hoy = registros.filter(r => new Date(r.created_at).toDateString() === new Date().toDateString());
   const kilosHoy = hoy.reduce((sum, r) => sum + parseFloat(r.kilos || 0), 0);
-  const totalHoy = hoy.reduce((sum, r) => sum + parseFloat(r.total || 0), 0);return (
+  const totalHoy = hoy.reduce((sum, r) => sum + parseFloat(r.total || 0), 0);
+
+  return (
     <div style={{ maxWidth: 700, margin: "40px auto", padding: 24 }}>
       <div style={{ display: "flex", gap: 16, marginBottom: 24 }}>
         <div style={{ flex: 1, background: "#1a5c38", color: "#fff", padding: 20, borderRadius: 12, textAlign: "center" }}>
@@ -87,6 +120,7 @@ function Acopio({ usuario }) {
           <p style={{ margin: 0, fontSize: 26, fontWeight: "bold" }}>{hoy.length}</p>
         </div>
       </div>
+
       {reciboActual && (
         <div>
          <div ref={reciboRef} style={{ background: "#fff", padding: 24, borderRadius: 12, marginBottom: 16, border: "2px solid #1a5c38", position: "relative", overflow: "hidden" }}>
@@ -140,8 +174,9 @@ function Acopio({ usuario }) {
           </div>
         </div>
       )}
+
       <div style={{ background: "#fff", padding: 24, borderRadius: 12, marginBottom: 24 }}>
-        <h3>Nuevo registro</h3>
+        <h3>{editandoId ? "Editar acopio" : "Nuevo registro"}</h3>
         <div style={{ position: "relative", marginBottom: 12 }}>
           <input placeholder="Buscar productor..." value={busqueda} onChange={e => { setBusqueda(e.target.value); setMostrarSugerencias(true); setProductorSeleccionado(null); }} style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid #ccc", boxSizing: "border-box" }} />
           {mostrarSugerencias && sugerencias.length > 0 && (
@@ -168,9 +203,15 @@ function Acopio({ usuario }) {
         </div>
         {form.kilos && form.precio_kilo && <p style={{ color: "#1a5c38", fontWeight: "bold", marginBottom: 12 }}>Total: ${(parseFloat(form.kilos) * parseFloat(form.precio_kilo)).toLocaleString("es-CO")}</p>}
         <textarea name="observaciones" placeholder="Observaciones" value={form.observaciones} onChange={manejarCambio} style={{ width: "100%", padding: 10, marginBottom: 16, borderRadius: 8, border: "1px solid #ccc", boxSizing: "border-box", minHeight: 80 }} />
-        <button onClick={guardarAcopio} disabled={cargando} style={{ width: "100%", padding: 12, background: "#1a5c38", color: "#fff", border: "none", borderRadius: 8, fontSize: 16, cursor: "pointer" }}>{cargando ? "Guardando..." : "Guardar Acopio"}</button>
+        <div style={{ display: "flex", gap: 12 }}>
+          <button onClick={guardarAcopio} disabled={cargando} style={{ flex: 1, padding: 12, background: "#1a5c38", color: "#fff", border: "none", borderRadius: 8, fontSize: 16, cursor: "pointer" }}>
+            {cargando ? "Guardando..." : editandoId ? "Actualizar Acopio" : "Guardar Acopio"}
+          </button>
+          {editandoId && <button onClick={cancelarEdicion} style={{ flex: 1, padding: 12, background: "#ccc", border: "none", borderRadius: 8, fontSize: 16, cursor: "pointer" }}>Cancelar</button>}
+        </div>
         {mensaje && <p style={{ marginTop: 12, textAlign: "center", color: mensaje.includes("Error") ? "red" : "green" }}>{mensaje}</p>}
       </div>
+
       <div style={{ background: "#fff", padding: 24, borderRadius: 12 }}>
         <h3>Registros recientes</h3>
         <input placeholder="Buscar por nombre de productor..." value={busquedaRegistros} onChange={e => setBusquedaRegistros(e.target.value)} style={{ width: "100%", padding: 10, marginBottom: 12, borderRadius: 8, border: "1px solid #ccc", boxSizing: "border-box" }} />
@@ -191,8 +232,9 @@ function Acopio({ usuario }) {
                 <td style={{ padding: 8 }}>{new Date(r.created_at).toLocaleDateString("es-CO")}</td>
                 <td style={{ padding: 8 }}>
                   <div style={{ display: "flex", gap: 6 }}>
-<button onClick={() => { setReciboActual(r); window.scrollTo(0, 0); }} style={{ background: "#2b6cb0", color: "#fff", border: "none", padding: "4px 10px", borderRadius: 6, cursor: "pointer", fontSize: 13 }}>Ver</button>
-<button onClick={() => { setReciboActual(r); setTimeout(() => compartirImagenWhatsApp(r), 500); }} style={{ background: "#25D366", color: "#fff", border: "none", padding: "4px 10px", borderRadius: 6, cursor: "pointer", fontSize: 13 }}>WA</button>
+                    <button onClick={() => { setReciboActual(r); window.scrollTo(0, 0); }} style={{ background: "#2b6cb0", color: "#fff", border: "none", padding: "4px 10px", borderRadius: 6, cursor: "pointer", fontSize: 13 }}>Ver</button>
+                    <button onClick={() => { setReciboActual(r); setTimeout(() => compartirImagenWhatsApp(r), 500); }} style={{ background: "#25D366", color: "#fff", border: "none", padding: "4px 10px", borderRadius: 6, cursor: "pointer", fontSize: 13 }}>WA</button>
+                    <button onClick={() => editarAcopio(r)} style={{ background: "#744210", color: "#fff", border: "none", padding: "4px 10px", borderRadius: 6, cursor: "pointer", fontSize: 13 }}>Editar</button>
                     <button onClick={() => eliminarAcopio(r.id)} style={{ background: "#e53e3e", color: "#fff", border: "none", padding: "4px 10px", borderRadius: 6, cursor: "pointer", fontSize: 13 }}>Eliminar</button>
                   </div>
                 </td>
