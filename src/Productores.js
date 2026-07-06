@@ -82,18 +82,7 @@ function Productores({ onVolver }) {
   };
 
   // --- Nuevo: abrir y cargar historial de un productor ---
-  const verHistorial = async (productor) => {
-    setHistorialAbierto(productor);
-    setCargandoHistorial(true);
-    setHistorialCompras([]);
-    const { data, error } = await supabase
-      .from("acopios")
-      .select("*")
-      .eq("cedula", productor.cedula)
-      .order("created_at", { ascending: false });
-    if (!error && data) setHistorialCompras(data);
-    setCargandoHistorial(false);
-  };
+  
 
   const cerrarHistorial = () => {
     setHistorialAbierto(null);
@@ -201,7 +190,7 @@ function Productores({ onVolver }) {
               </tr>
             ))}</tbody>
           </table>
-        )}
+        )}F
       </div>
 
       {/* --- Nuevo: modal de historial --- */}
