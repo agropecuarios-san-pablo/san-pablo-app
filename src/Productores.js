@@ -13,6 +13,11 @@ function Productores({ onVolver }) {
   const [editando, setEditando] = useState(null);
   const archivoRef = useRef(null);
 
+  // --- Nuevo: estado para el historial ---
+  const [historialAbierto, setHistorialAbierto] = useState(null); // guarda el productor seleccionado
+  const [historialCompras, setHistorialCompras] = useState([]);
+  const [cargandoHistorial, setCargandoHistorial] = useState(false);
+
   useEffect(() => { cargarProductores(); }, []);
 
   const cargarProductores = async () => {
@@ -72,7 +77,32 @@ function Productores({ onVolver }) {
       setImportando(false);
     };
     lector.readAsText(archivo);
-  };return (
+  };
+
+  // --- Nuevo: abrir y cargar historial de un productor ---
+  const verHistorial = async (productor) => {
+    setHistorialAbierto(productor);
+    setCargandoHistorial(true);
+    setHistorialCompras([]);
+    const { data, error } = await supabase
+      .from("acopios")
+      .select("*")
+      .eq("cedula", productor.cedula)
+      .order("created_at", { ascending: false });
+    if (!error && data) setHistorialCompras(data);
+    setCargandoHistorial(false);
+  };
+
+  const cerrarHistorial = () => {
+    setHistorialAbierto(null);
+    setHistorialCompras([]);
+  };
+
+  // --- Nuevo: totales acumulados del historial ---
+  const totalKilos = historialCompras.reduce((s, a) => s + Number(a.kilos || 0), 0);
+  const totalDinero = historialCompras.reduce((s, a) => s + Number(a.total || 0), 0);
+
+  return (
     <div style={{ maxWidth: 700, margin: "40px auto", padding: 24 }}>
       <h2 style={{ color: "#1a5c38" }}>Gestion de Productores</h2>
       <div style={{ background: "#fff", padding: 24, borderRadius: 12, marginBottom: 24 }}>
@@ -114,7 +144,8 @@ function Productores({ onVolver }) {
                 <td style={{ padding: 8 }}>{p.vereda}</td>
                 <td style={{ padding: 8 }}>{p.finca}</td>
                 <td style={{ padding: 8 }}>
-                  <div style={{ display: "flex", gap: 6 }}>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    <button onClick={() => verHistorial(p)} style={{ background: "#6b46c1", color: "#fff", border: "none", padding: "4px 10px", borderRadius: 6, cursor: "pointer" }}>Historial</button>
                     <button onClick={() => editarProductor(p)} style={{ background: "#2b6cb0", color: "#fff", border: "none", padding: "4px 10px", borderRadius: 6, cursor: "pointer" }}>Editar</button>
                     <button onClick={() => eliminar(p.id)} style={{ background: "#e53e3e", color: "#fff", border: "none", padding: "4px 10px", borderRadius: 6, cursor: "pointer" }}>Eliminar</button>
                   </div>
@@ -124,6 +155,57 @@ function Productores({ onVolver }) {
           </table>
         )}
       </div>
+
+      {/* --- Nuevo: modal de historial --- */}
+      {historialAbierto && (
+        <div
+          onClick={cerrarHistorial}
+          style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ background: "#fff", borderRadius: 12, padding: 24, maxWidth: 600, width: "100%", maxHeight: "85vh", overflowY: "auto" }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <h3 style={{ margin: 0 }}>Historial de {historialAbierto.nombre}</h3>
+              <button onClick={cerrarHistorial} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer" }}>✕</button>
+            </div>
+            <p style={{ color: "#666", marginTop: 0 }}>Cedula: {historialAbierto.cedula}</p>
+
+            {cargandoHistorial ? (
+              <p>Cargando historial...</p>
+            ) : historialCompras.length === 0 ? (
+              <p style={{ color: "#999" }}>Este productor aun no tiene compras registradas.</p>
+            ) : (
+              <>
+                <div style={{ background: "#f0f7f2", padding: 16, borderRadius: 8, marginBottom: 16, display: "flex", justifyContent: "space-between" }}>
+                  <div><strong>Total kilos:</strong> {totalKilos.toFixed(2)} kg</div>
+                  <div><strong>Total pagado:</strong> ${totalDinero.toLocaleString("es-CO")}</div>
+                  <div><strong>Compras:</strong> {historialCompras.length}</div>
+                </div>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
+                  <thead><tr style={{ background: "#f5f5f5" }}>
+                    <th style={{ padding: 6, textAlign: "left" }}>Fecha</th>
+                    <th style={{ padding: 6, textAlign: "right" }}>Kilos</th>
+                    <th style={{ padding: 6, textAlign: "right" }}>Precio/kg</th>
+                    <th style={{ padding: 6, textAlign: "right" }}>Total</th>
+                    <th style={{ padding: 6, textAlign: "left" }}>Obs.</th>
+                  </tr></thead>
+                  <tbody>{historialCompras.map((a) => (
+                    <tr key={a.id} style={{ borderBottom: "1px solid #eee" }}>
+                      <td style={{ padding: 6 }}>{new Date(a.created_at).toLocaleDateString("es-CO")}</td>
+                      <td style={{ padding: 6, textAlign: "right" }}>{Number(a.kilos).toFixed(2)}</td>
+                      <td style={{ padding: 6, textAlign: "right" }}>${Number(a.precio_kilo).toLocaleString("es-CO")}</td>
+                      <td style={{ padding: 6, textAlign: "right" }}>${Number(a.total).toLocaleString("es-CO")}</td>
+                      <td style={{ padding: 6 }}>{a.observaciones || "-"}</td>
+                    </tr>
+                  ))}</tbody>
+                </table>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -89,13 +89,32 @@ function Acopio({ usuario }) {
       </div>
       {reciboActual && (
         <div>
-          <div ref={reciboRef} style={{ background: "#fff", padding: 24, borderRadius: 12, marginBottom: 16, border: "2px solid #1a5c38" }}>
-            <div style={{ textAlign: "center", marginBottom: 16 }}>
-              <h2 style={{ color: "#1a5c38", margin: 0 }}>Agropecuarios San Pablo</h2>
-              <p style={{ color: "#666", margin: 4 }}>Sistema de Acopio de Cacao</p>
-              <hr />
-              <h3>RECIBO DE COMPRA</h3>
-            </div>
+         <div ref={reciboRef} style={{ background: "#fff", padding: 24, borderRadius: 12, marginBottom: 16, border: "2px solid #1a5c38", position: "relative", overflow: "hidden" }}>
+  <img
+    src="/logo.jpg"
+    alt=""
+    style={{
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  width: "100%",
+  height: "100%",
+  objectFit: "contain",
+  opacity: 0.12,
+  zIndex: 0,
+  pointerEvents: "none"
+}}
+    onError={(e) => { e.target.style.display = "none"; }}
+  />
+  <div style={{ position: "relative", zIndex: 1 }}>
+    <div style={{ textAlign: "center", marginBottom: 16 }}>
+      <h2 style={{ color: "#1a5c38", margin: 0 }}>Agropecuarios San Pablo</h2>
+      <p style={{ color: "#666", margin: 4 }}>Sistema de Acopio de Cacao</p>
+      <hr />
+      <h3>RECIBO DE COMPRA</h3>
+    </div>
             <div style={{ marginBottom: 12 }}>
               <p><strong>Fecha:</strong> {new Date(reciboActual.created_at).toLocaleDateString("es-CO")}</p>
               <p><strong>Hora:</strong> {new Date(reciboActual.created_at).toLocaleTimeString("es-CO")}</p>
@@ -112,6 +131,7 @@ function Acopio({ usuario }) {
               <p style={{ fontSize: 20, color: "#1a5c38" }}><strong>TOTAL A PAGAR: ${parseFloat(reciboActual.total).toLocaleString("es-CO")}</strong></p>
             </div>
             {reciboActual.observaciones && <p><strong>Observaciones:</strong> {reciboActual.observaciones}</p>}
+            </div>
           </div>
           <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
             <button onClick={() => window.print()} style={{ flex: 1, padding: "10px 16px", background: "#1a5c38", color: "#fff", border: "none", borderRadius: 8, fontSize: 15, cursor: "pointer" }}>Imprimir</button>
