@@ -16,9 +16,7 @@ function Productores({ onVolver }) {
   const archivoRef = useRef(null);
 
   // --- Nuevo: estado para el historial ---
-  const [historialAbierto, setHistorialAbierto] = useState(null); // guarda el productor seleccionado
-  const [historialCompras, setHistorialCompras] = useState([]);
-  const [cargandoHistorial, setCargandoHistorial] = useState(false);
+  
 
   useEffect(() => { cargarProductores(); }, []);
 
