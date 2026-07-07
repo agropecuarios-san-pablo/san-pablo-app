@@ -121,6 +121,22 @@ function Reportes() {
       </div>
 
       <div style={{ background: "#fff", padding: 24, borderRadius: 12, marginBottom: 24 }}>
+        {busqueda && filtrado.length > 0 && (
+  <div style={{ display: "flex", gap: 16, marginBottom: 24 }}>
+    <div style={{ flex: 1, background: "#1a5c38", color: "#fff", padding: 20, borderRadius: 12, textAlign: "center" }}>
+      <p style={{ margin: 0, fontSize: 13 }}>Total Kilos</p>
+      <p style={{ margin: 0, fontSize: 24, fontWeight: "bold" }}>{totalKilos.toFixed(1)} kg</p>
+    </div>
+    <div style={{ flex: 1, background: "#2b6cb0", color: "#fff", padding: 20, borderRadius: 12, textAlign: "center" }}>
+      <p style={{ margin: 0, fontSize: 13 }}>Total Pagado</p>
+      <p style={{ margin: 0, fontSize: 24, fontWeight: "bold" }}>${totalPesos.toLocaleString("es-CO")}</p>
+    </div>
+    <div style={{ flex: 1, background: "#744210", color: "#fff", padding: 20, borderRadius: 12, textAlign: "center" }}>
+      <p style={{ margin: 0, fontSize: 13 }}>Visitas</p>
+      <p style={{ margin: 0, fontSize: 24, fontWeight: "bold" }}>{filtrado.length}</p>
+    </div>
+  </div>
+)}
         <h3>Resumen por productor</h3>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead><tr style={{ background: "#f5f5f5" }}>
