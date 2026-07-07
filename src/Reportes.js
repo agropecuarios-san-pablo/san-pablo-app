@@ -53,41 +53,60 @@ function Reportes() {
   return (
     <div style={{ maxWidth: 900, margin: "40px auto", padding: 24 }}>
       <h2 style={{ color: "#1a5c38" }}>Reportes</h2>
+
       <div style={{ background: "#fff", padding: 24, borderRadius: 12, marginBottom: 24 }}>
         <h3>Buscar productor</h3>
-<div style={{ position: "relative", marginBottom: 12 }}>
-  <div style={{ position: "relative" }}>
-    <input
-      placeholder="🔍 Escribe el nombre del productor..."
-      value={busqueda}
-      onChange={e => {
-        const valor = e.target.value;
-        setBusqueda(valor);
-        let resultado = registros;
-        if (valor) resultado = resultado.filter(r => r.productor.toLowerCase().includes(valor.toLowerCase()));
-        setFiltrado(resultado);
-      }}
-      style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid #ccc", boxSizing: "border-box" }}
-    />
-    {busqueda && (
-      <span onClick={() => { setBusqueda(""); setFiltrado(registros); }}
-        style={{ position: "absolute", right: 10, top: 10, cursor: "pointer", color: "#999", fontSize: 18 }}>✕</span>
-    )}
-  </div>
-  {busqueda.length > 0 && (
-    <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#fff", border: "1px solid #ccc", borderRadius: 8, zIndex: 10, maxHeight: 200, overflowY: "auto", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
-      {[...new Set(registros.filter(r => r.productor.toLowerCase().includes(busqueda.toLowerCase())).map(r => r.productor))].map(nombre => (
-        <div key={nombre} onClick={() => {
-          setBusqueda(nombre);
-          setFiltrado(registros.filter(r => r.productor === nombre));
-        }} style={{ padding: "10px 14px", cursor: "pointer", borderBottom: "1px solid #eee" }}>
-          {nombre}
+        <div style={{ position: "relative", marginBottom: 12 }}>
+          <div style={{ position: "relative" }}>
+            <input
+              placeholder="🔍 Escribe el nombre del productor..."
+              value={busqueda}
+              onChange={e => {
+                const valor = e.target.value;
+                setBusqueda(valor);
+                let resultado = registros;
+                if (valor) resultado = resultado.filter(r => r.productor.toLowerCase().includes(valor.toLowerCase()));
+                setFiltrado(resultado);
+              }}
+              style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid #ccc", boxSizing: "border-box" }}
+            />
+            {busqueda && (
+              <span onClick={() => { setBusqueda(""); setFiltrado(registros); }}
+                style={{ position: "absolute", right: 10, top: 10, cursor: "pointer", color: "#999", fontSize: 18 }}>✕</span>
+            )}
+          </div>
+          {busqueda.length > 0 && (
+            <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#fff", border: "1px solid #ccc", borderRadius: 8, zIndex: 10, maxHeight: 200, overflowY: "auto", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
+              {[...new Set(registros.filter(r => r.productor.toLowerCase().includes(busqueda.toLowerCase())).map(r => r.productor))].map(nombre => (
+                <div key={nombre} onClick={() => {
+                  setBusqueda(nombre);
+                  setFiltrado(registros.filter(r => r.productor === nombre));
+                }} style={{ padding: "10px 14px", cursor: "pointer", borderBottom: "1px solid #eee" }}>
+                  {nombre}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      ))}
-    </div>
-  )}
-</div>
-        <h3>Filtrar por fecha</h3>
+
+        {busqueda && filtrado.length > 0 && (
+          <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
+            <div style={{ flex: 1, background: "#1a5c38", color: "#fff", padding: 16, borderRadius: 10, textAlign: "center" }}>
+              <p style={{ margin: 0, fontSize: 12 }}>Total Kilos</p>
+              <p style={{ margin: 0, fontSize: 20, fontWeight: "bold" }}>{totalKilos.toFixed(1)} kg</p>
+            </div>
+            <div style={{ flex: 1, background: "#2b6cb0", color: "#fff", padding: 16, borderRadius: 10, textAlign: "center" }}>
+              <p style={{ margin: 0, fontSize: 12 }}>Total Pagado</p>
+              <p style={{ margin: 0, fontSize: 20, fontWeight: "bold" }}>${totalPesos.toLocaleString("es-CO")}</p>
+            </div>
+            <div style={{ flex: 1, background: "#744210", color: "#fff", padding: 16, borderRadius: 10, textAlign: "center" }}>
+              <p style={{ margin: 0, fontSize: 12 }}>Visitas</p>
+              <p style={{ margin: 0, fontSize: 20, fontWeight: "bold" }}>{filtrado.length}</p>
+            </div>
+          </div>
+        )}
+
+        <h3 style={{ marginTop: 24 }}>Filtrar por fecha</h3>
         <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
           <div style={{ flex: 1 }}>
             <label style={{ display: "block", marginBottom: 4, color: "#555" }}>Desde</label>
@@ -121,22 +140,6 @@ function Reportes() {
       </div>
 
       <div style={{ background: "#fff", padding: 24, borderRadius: 12, marginBottom: 24 }}>
-        {busqueda && filtrado.length > 0 && (
-  <div style={{ display: "flex", gap: 16, marginBottom: 24 }}>
-    <div style={{ flex: 1, background: "#1a5c38", color: "#fff", padding: 20, borderRadius: 12, textAlign: "center" }}>
-      <p style={{ margin: 0, fontSize: 13 }}>Total Kilos</p>
-      <p style={{ margin: 0, fontSize: 24, fontWeight: "bold" }}>{totalKilos.toFixed(1)} kg</p>
-    </div>
-    <div style={{ flex: 1, background: "#2b6cb0", color: "#fff", padding: 20, borderRadius: 12, textAlign: "center" }}>
-      <p style={{ margin: 0, fontSize: 13 }}>Total Pagado</p>
-      <p style={{ margin: 0, fontSize: 24, fontWeight: "bold" }}>${totalPesos.toLocaleString("es-CO")}</p>
-    </div>
-    <div style={{ flex: 1, background: "#744210", color: "#fff", padding: 20, borderRadius: 12, textAlign: "center" }}>
-      <p style={{ margin: 0, fontSize: 13 }}>Visitas</p>
-      <p style={{ margin: 0, fontSize: 24, fontWeight: "bold" }}>{filtrado.length}</p>
-    </div>
-  </div>
-)}
         <h3>Resumen por productor</h3>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead><tr style={{ background: "#f5f5f5" }}>
