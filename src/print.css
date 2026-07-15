@@ -1,0 +1,25 @@
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #recibo-imprimible,
+  #recibo-imprimible * {
+    visibility: visible;
+  }
+  #recibo-imprimible {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  /* Oculta la marca de agua SOLO al imprimir */
+  #recibo-imprimible .marca-agua {
+    display: none !important;
+  }
+
+  /* Fuerza todo el texto del recibo a negro sólido para la térmica */
+  #recibo-imprimible * {
+    color: #000 !important;
+  }
+}

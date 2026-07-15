@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { supabase } from "./supabase";
 import html2canvas from "html2canvas";
+import "./print.css";
 
 function Acopio({ usuario }) {
   const [form, setForm] = useState({ kilos: "", precio_kilo: "", observaciones: "" });
@@ -123,10 +124,11 @@ function Acopio({ usuario }) {
 
       {reciboActual && (
         <div>
-         <div ref={reciboRef} style={{ background: "#fff", padding: 24, borderRadius: 12, marginBottom: 16, border: "2px solid #1a5c38", position: "relative", overflow: "hidden" }}>
+         <div id="recibo-imprimible" ref={reciboRef} style={{ background: "#fff", padding: 24, borderRadius: 12, marginBottom: 16, border: "2px solid #1a5c38", position: "relative", overflow: "hidden" }}>
   <img
     src="/logo.jpg"
     alt=""
+    className="marca-agua"
     style={{
   position: "absolute",
   top: 0,
