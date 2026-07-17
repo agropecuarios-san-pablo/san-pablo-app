@@ -79,23 +79,38 @@ function Acopio({ usuario }) {
   };
 
   const eliminarAcopio = async (id) => {
-    if (!window.confirm("Seguro que deseas eliminar este registro?")) return;
+    if (!window.confirm("¿Seguro que deseas eliminar este registro?")) return;
     await supabase.from("acopios").delete().eq("id", id);
     cargarRegistros();
   };
 
-  const compartirImagenWhatsApp = async (r) => {
+  const compartirEImprimir = async (r) => {
     const elemento = reciboRef.current;
     if (!elemento) return;
-    const canvas = await html2canvas(elemento, { scale: 2, backgroundColor: "#ffffff" });
-    const imagen = canvas.toDataURL("image/png");
-    const blob = await (await fetch(imagen)).blob();
-    const file = new File([blob], "recibo.png", { type: "image/png" });
-    if (navigator.share && navigator.canShare({ files: [file] })) {
-      await navigator.share({ files: [file], title: "Recibo Agropecuarios San Pablo" });
-    } else {
+    
+    try {
+      const canvas = await html2canvas(elemento, { scale: 2, backgroundColor: "#ffffff" });
+      const imagen = canvas.toDataURL("image/png");
+      const blob = await (await fetch(imagen)).blob();
+      const file = new File([blob], "recibo_san_pablo.png", { type: "image/png" });
+
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      const esMovil = /iPad|iPhone|iPod|android/i.test(userAgent);
+
+      if (esMovil && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ 
+          files: [file], 
+          title: "Recibo Agropecuarios San Pablo",
+          text: "Imprimir comprobante en Mini-Printer"
+        });
+      } else {
+        const urlTemporal = URL.createObjectURL(file);
+        window.open(urlTemporal, "_blank");
+      }
+    } catch (error) {
+      console.error("Error al procesar la imagen:", error);
       const telefono = r.telefono ? r.telefono.replace(/\D/g, "") : "";
-      const url = telefono ? `https://wa.me/57${telefono}` : `https://wa.me/`;
+      const url = telefono ? `https://wa.me{telefono}` : `https://wa.me`;
       window.open(url, "_blank");
     }
   };
@@ -103,9 +118,7 @@ function Acopio({ usuario }) {
   const registrosFiltrados = registros.filter(r => r.productor.toLowerCase().includes(busquedaRegistros.toLowerCase()));
   const hoy = registros.filter(r => new Date(r.created_at).toDateString() === new Date().toDateString());
   const kilosHoy = hoy.reduce((sum, r) => sum + parseFloat(r.kilos || 0), 0);
-  const totalHoy = hoy.reduce((sum, r) => sum + parseFloat(r.total || 0), 0);
-
-  return (
+  const totalHoy = hoy.reduce((sum, r) => sum + parseFloat(r.total || 0), 0); return (
     <div style={{ maxWidth: 700, margin: "40px auto", padding: 24 }}>
       <div style={{ display: "flex", gap: 16, marginBottom: 24 }}>
         <div style={{ flex: 1, background: "#1a5c38", color: "#fff", padding: 20, borderRadius: 12, textAlign: "center" }}>
@@ -123,130 +136,121 @@ function Acopio({ usuario }) {
       </div>
 
       {reciboActual && (
-        <div>
-         <div id="recibo-imprimible" ref={reciboRef} style={{ background: "#fff", padding: 24, borderRadius: 12, marginBottom: 16, border: "2px solid #1a5c38", position: "relative", overflow: "hidden" }}>
-  <img
-    src="/logo.jpg"
-    alt=""
-    className="marca-agua"
-    style={{
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  width: "100%",
-  height: "100%",
-  objectFit: "contain",
-  opacity: 0.12,
-  zIndex: 0,
-  pointerEvents: "none"
-}}
-    onError={(e) => { e.target.style.display = "none"; }}
-  />
-  <div style={{ position: "relative", zIndex: 1 }}>
-    <div style={{ textAlign: "center", marginBottom: 16 }}>
-      <h2 style={{ color: "#1a5c38", margin: 0 }}>Agropecuarios San Pablo</h2>
-      <p style={{ color: "#666", margin: 4 }}>Sistema de Acopio de Cacao</p>
-      <hr />
-      <h3>RECIBO DE COMPRA</h3>
-    </div>
-            <div style={{ marginBottom: 12 }}>
-              <p><strong>Fecha:</strong> {new Date(reciboActual.created_at).toLocaleDateString("es-CO")}</p>
-              <p><strong>Hora:</strong> {new Date(reciboActual.created_at).toLocaleTimeString("es-CO")}</p>
-              <p><strong>Productor:</strong> {reciboActual.productor}</p>
-              <p><strong>Cedula:</strong> {reciboActual.cedula}</p>
-              <p><strong>Telefono:</strong> {reciboActual.telefono}</p>
-              <p><strong>Vereda:</strong> {reciboActual.vereda}</p>
-              <p><strong>Finca:</strong> {reciboActual.finca}</p>
-            </div>
-            <hr />
-            <div style={{ marginBottom: 12 }}>
-              <p><strong>Kilos comprados:</strong> {reciboActual.kilos} kg</p>
-              <p><strong>Valor por kilo:</strong> ${parseFloat(reciboActual.precio_kilo).toLocaleString("es-CO")}</p>
-              <p style={{ fontSize: 20, color: "#1a5c38" }}><strong>TOTAL A PAGAR: ${parseFloat(reciboActual.total).toLocaleString("es-CO")}</strong></p>
-            </div>
-            {reciboActual.observaciones && <p><strong>Observaciones:</strong> {reciboActual.observaciones}</p>}
+        <div style={{ marginBottom: 30 }}>
+          <div id="recibo-imprimible" ref={reciboRef} style={{ background: "#fff", padding: 24, borderRadius: 12, marginBottom: 16, border: "2px solid #1a5c38", position: "relative", overflow: "hidden" }}>
+            <img
+              src="/logo.jpg"
+              alt=""
+              className="marca-agua"
+              style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%", objectFit: "contain", opacity: 0.12, zIndex: 0, pointerEvents: "none" }}
+              onError={(e) => { e.target.style.display = "none"; }}
+            />
+            <div style={{ position: "relative", zIndex: 1, color: "#000" }}>
+              <div style={{ textAlign: "center", marginBottom: 16 }}>
+                <h2 style={{ color: "#1a5c38", margin: 0 }}>Agropecuarios San Pablo</h2>
+                <p style={{ color: "#666", margin: 4 }}>Sistema de Acopio de Cacao</p>
+                <hr />
+                <h3>RECIBO DE COMPRA</h3>
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <p><strong>Fecha:</strong> {new Date(reciboActual.created_at).toLocaleDateString("es-CO")}</p>
+                <p><strong>Hora:</strong> {new Date(reciboActual.created_at).toLocaleTimeString("es-CO")}</p>
+                <p><strong>Productor:</strong> {reciboActual.productor}</p>
+                <p><strong>Cédula:</strong> {reciboActual.cedula}</p>
+                <p><strong>Teléfono:</strong> {reciboActual.telefono}</p>
+                <p><strong>Vereda:</strong> {reciboActual.vereda}</p>
+                <p><strong>Finca:</strong> {reciboActual.finca}</p>
+              </div>
+              <hr />
+              <div style={{ marginBottom: 12 }}>
+                <p><strong>Kilos comprados:</strong> {reciboActual.kilos} kg</p>
+                <p><strong>Valor por kilo:</strong> ${parseFloat(reciboActual.precio_kilo).toLocaleString("es-CO")}</p>
+                <p style={{ fontSize: 20, color: "#1a5c38" }}><strong>TOTAL A PAGAR: ${parseFloat(reciboActual.total).toLocaleString("es-CO")}</strong></p>
+              </div>
+              {reciboActual.observaciones && <p><strong>Observaciones:</strong> {reciboActual.observaciones}</p>}
             </div>
           </div>
-          <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
-            <button onClick={() => window.print()} style={{ flex: 1, padding: "10px 16px", background: "#1a5c38", color: "#fff", border: "none", borderRadius: 8, fontSize: 15, cursor: "pointer" }}>Imprimir</button>
-            <button onClick={() => compartirImagenWhatsApp(reciboActual)} style={{ flex: 1, padding: "10px 16px", background: "#25D366", color: "#fff", border: "none", borderRadius: 8, fontSize: 15, cursor: "pointer" }}>Compartir WhatsApp</button>
-            <button onClick={() => setReciboActual(null)} style={{ flex: 1, padding: "10px 16px", background: "#ccc", border: "none", borderRadius: 8, fontSize: 15, cursor: "pointer" }}>Cerrar</button>
-          </div>
+          <button 
+            onClick={() => compartirEImprimir(reciboActual)}
+            style={{ width: "100%", padding: "14px", backgroundColor: "#007AFF", color: "#fff", border: "none", borderRadius: "10px", fontSize: "16px", fontWeight: "bold", cursor: "pointer", boxShadow: "0px 4px 6px rgba(0,0,0,0.1)", marginBottom: "20px" }}
+          >
+            🖨️ Enviar a BR RawPrinter / Compartir
+          </button>
         </div>
       )}
 
-      <div style={{ background: "#fff", padding: 24, borderRadius: 12, marginBottom: 24 }}>
-        <h3>{editandoId ? "Editar acopio" : "Nuevo registro"}</h3>
-        <div style={{ position: "relative", marginBottom: 12 }}>
-          <input placeholder="Buscar productor..." value={busqueda} onChange={e => { setBusqueda(e.target.value); setMostrarSugerencias(true); setProductorSeleccionado(null); }} style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid #ccc", boxSizing: "border-box" }} />
+      <div style={{ background: "#fff", padding: 24, borderRadius: 12, boxShadow: "0 4px 6px rgba(0,0,0,0.05)" }}>
+        <h2 style={{ color: "#1a5c38", marginTop: 0 }}>{editandoId ? "Editar Registro" : "Nuevo Registro de Acopio"}</h2>
+        {mensaje && <p style={{ color: mensaje.includes("Error") ? "#e53e3e" : "#38a169", fontWeight: "bold" }}>{mensaje}</p>}
+        
+        <div style={{ position: "relative", marginBottom: 16 }}>
+          <label style={{ display: "block", marginBottom: 6, fontWeight: "bold", color: "#4a5568" }}>Buscar Productor</label>
+          <input
+            type="text"
+            value={busqueda}
+            onChange={(e) => { setBusqueda(e.target.value); setMostrarSugerencias(true); }}
+            placeholder="Escribe el nombre del productor..."
+            style={{ width: "100%", padding: "10px 14px", borderRadius: 6, border: "1px solid #cbd5e0", boxSizing: "border-box" }}
+            disabled={editandoId !== null}
+          />
           {mostrarSugerencias && sugerencias.length > 0 && (
-            <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#fff", border: "1px solid #ccc", borderRadius: 8, zIndex: 10, maxHeight: 200, overflowY: "auto" }}>
+            <ul style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "#fff", border: "1px solid #cbd5e0", borderRadius: 6, padding: 0, margin: "4px 0 0 0", listStyle: "none", zIndex: 10, maxHeight: 200, overflowY: "auto", boxShadow: "0 10px 15px rgba(0,0,0,0.1)" }}>
               {sugerencias.map(p => (
-                <div key={p.id} onClick={() => seleccionarProductor(p)} style={{ padding: "10px 14px", cursor: "pointer", borderBottom: "1px solid #eee" }}>
-                  {p.nombre} - {p.cedula}
-                </div>
+                <li key={p.id} onClick={() => seleccionarProductor(p)} style={{ padding: "10px 14px", cursor: "pointer", borderBottom: "1px solid #edf2f7" }} onMouseEnter={(e) => e.target.style.background = "#f7fafc"} onMouseLeave={(e) => e.target.style.background = "#fff"}>
+                  {p.nombre} - CC: {p.cedula}
+                </li>
               ))}
-            </div>
+            </ul>
           )}
         </div>
+
         {productorSeleccionado && (
-          <div style={{ marginBottom: 12, padding: 12, background: "#f0fff4", borderRadius: 8 }}>
-            <p style={{ margin: 2, color: "#1a5c38" }}><strong>Cedula:</strong> {productorSeleccionado.cedula}</p>
-            <p style={{ margin: 2, color: "#1a5c38" }}><strong>Telefono:</strong> {productorSeleccionado.telefono}</p>
-            <p style={{ margin: 2, color: "#1a5c38" }}><strong>Finca:</strong> {productorSeleccionado.finca}</p>
-            <p style={{ margin: 2, color: "#1a5c38" }}><strong>Vereda:</strong> {productorSeleccionado.vereda}</p>
+          <div style={{ background: "#f7fafc", padding: 14, borderRadius: 6, marginBottom: 16, borderLeft: "4px solid #1a5c38" }}>
+            <p style={{ margin: "2px 0" }}><strong>Productor:</strong> {productorSeleccionado.nombre}</p>
+            <p style={{ margin: "2px 0" }}><strong>Cédula:</strong> {productorSeleccionado.cedula}</p>
+            <p style={{ margin: "2px 0" }}><strong>Finca:</strong> {productorSeleccionado.finca} ({productorSeleccionado.vereda})</p>
           </div>
         )}
-        <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
-          <input name="kilos" type="number" placeholder="Kilos" value={form.kilos} onChange={manejarCambio} style={{ flex: 1, padding: 10, borderRadius: 8, border: "1px solid #ccc" }} />
-          <input name="precio_kilo" type="number" placeholder="Precio por kilo" value={form.precio_kilo} onChange={manejarCambio} style={{ flex: 1, padding: 10, borderRadius: 8, border: "1px solid #ccc" }} />
+
+        <div style={{ display: "flex", gap: 16, marginBottom: 16 }}>
+          <div style={{ flex: 1 }}>
+            <label style={{ display: "block", marginBottom: 6, fontWeight: "bold", color: "#4a5568" }}>Kilos</label>
+            <input type="number" name="kilos" value={form.kilos} onChange={manejarCambio} placeholder="0.0" style={{ width: "100%", padding: "10px 14px", borderRadius: 6, border: "1px solid #cbd5e0", boxSizing: "border-box" }} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <label style={{ display: "block", marginBottom: 6, fontWeight: "bold", color: "#4a5568" }}>Precio por Kilo</label>
+            <input type="number" name="precio_kilo" value={form.precio_kilo} onChange={manejarCambio} placeholder="$" style={{ width: "100%", padding: "10px 14px", borderRadius: 6, border: "1px solid #cbd5e0", boxSizing: "border-box" }} />
+          </div>
         </div>
-        {form.kilos && form.precio_kilo && <p style={{ color: "#1a5c38", fontWeight: "bold", marginBottom: 12 }}>Total: ${(parseFloat(form.kilos) * parseFloat(form.precio_kilo)).toLocaleString("es-CO")}</p>}
-        <textarea name="observaciones" placeholder="Observaciones" value={form.observaciones} onChange={manejarCambio} style={{ width: "100%", padding: 10, marginBottom: 16, borderRadius: 8, border: "1px solid #ccc", boxSizing: "border-box", minHeight: 80 }} />
+
+        <div style={{ marginBottom: 20 }}>
+          <label style={{ display: "block", marginBottom: 6, fontWeight: "bold", color: "#4a5568" }}>Observaciones (Opcional)</label>
+          <textarea name="observaciones" value={form.observaciones} onChange={manejarCambio} placeholder="Detalles del grano, humedad, etc..." rows="2" style={{ width: "100%", padding: "10px 14px", borderRadius: 6, border: "1px solid #cbd5e0", boxSizing: "border-box", resize: "none" }}></textarea>
+        </div>
+
         <div style={{ display: "flex", gap: 12 }}>
-          <button onClick={guardarAcopio} disabled={cargando} style={{ flex: 1, padding: 12, background: "#1a5c38", color: "#fff", border: "none", borderRadius: 8, fontSize: 16, cursor: "pointer" }}>
-            {cargando ? "Guardando..." : editandoId ? "Actualizar Acopio" : "Guardar Acopio"}
+          <button onClick={guardarAcopio} disabled={cargando} style={{ flex: 1, padding: "12px", background: "#1a5c38", color: "#fff", border: "none", borderRadius: 6, fontWeight: "bold", cursor: "pointer" }}>
+            {cargando ? "Guardando..." : editandoId ? "Actualizar Registro" : "Guardar Acopio"}
           </button>
-          {editandoId && <button onClick={cancelarEdicion} style={{ flex: 1, padding: 12, background: "#ccc", border: "none", borderRadius: 8, fontSize: 16, cursor: "pointer" }}>Cancelar</button>}
+          {editandoId && (
+            <button onClick={cancelarEdicion} style={{ padding: "12px 20px", background: "#718096", color: "#fff", border: "none", borderRadius: 6, fontWeight: "bold", cursor: "pointer" }}>
+              Cancelar
+            </button>
+          )}
         </div>
-        {mensaje && <p style={{ marginTop: 12, textAlign: "center", color: mensaje.includes("Error") ? "red" : "green" }}>{mensaje}</p>}
       </div>
 
-      <div style={{ background: "#fff", padding: 24, borderRadius: 12 }}>
-        <h3>Registros recientes</h3>
-        <input placeholder="Buscar por nombre de productor..." value={busquedaRegistros} onChange={e => setBusquedaRegistros(e.target.value)} style={{ width: "100%", padding: 10, marginBottom: 12, borderRadius: 8, border: "1px solid #ccc", boxSizing: "border-box" }} />
-        {registrosFiltrados.length === 0 ? <p style={{ color: "#999" }}>No hay registros.</p> : (
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead><tr style={{ background: "#f5f5f5" }}>
-              <th style={{ padding: 8, textAlign: "left" }}>Productor</th>
-              <th style={{ padding: 8, textAlign: "left" }}>Kilos</th>
-              <th style={{ padding: 8, textAlign: "left" }}>Total</th>
-              <th style={{ padding: 8, textAlign: "left" }}>Fecha</th>
-              <th style={{ padding: 8 }}></th>
-            </tr></thead>
-            <tbody>{registrosFiltrados.map((r) => (
-              <tr key={r.id} style={{ borderBottom: "1px solid #eee" }}>
-                <td style={{ padding: 8 }}>{r.productor}</td>
-                <td style={{ padding: 8 }}>{r.kilos}</td>
-                <td style={{ padding: 8 }}>${parseFloat(r.total).toLocaleString("es-CO")}</td>
-                <td style={{ padding: 8 }}>{new Date(r.created_at).toLocaleDateString("es-CO")}</td>
-                <td style={{ padding: 8 }}>
-                  <div style={{ display: "flex", gap: 6 }}>
-                    <button onClick={() => { setReciboActual(r); window.scrollTo(0, 0); }} style={{ background: "#2b6cb0", color: "#fff", border: "none", padding: "4px 10px", borderRadius: 6, cursor: "pointer", fontSize: 13 }}>Ver</button>
-                    <button onClick={() => { setReciboActual(r); setTimeout(() => compartirImagenWhatsApp(r), 500); }} style={{ background: "#25D366", color: "#fff", border: "none", padding: "4px 10px", borderRadius: 6, cursor: "pointer", fontSize: 13 }}>WA</button>
-                    <button onClick={() => editarAcopio(r)} style={{ background: "#744210", color: "#fff", border: "none", padding: "4px 10px", borderRadius: 6, cursor: "pointer", fontSize: 13 }}>Editar</button>
-                    <button onClick={() => eliminarAcopio(r.id)} style={{ background: "#e53e3e", color: "#fff", border: "none", padding: "4px 10px", borderRadius: 6, cursor: "pointer", fontSize: 13 }}>Eliminar</button>
-                  </div>
-                </td>
-              </tr>
-            ))}</tbody>
-          </table>
-        )}
-      </div>
-    </div>
-  );
-}
-
-export default Acopio;
+      <div style={{ marginTop: 40 }}>
+        <h3 style={{ color: "#2d3748" }}>Historial de Registros</h3>
+        <input type="text" placeholder="Filtrar por productor..." value={busquedaRegistros} onChange={(e) => setBusquedaRegistros(e.target.value)} style={{ width: "100%", padding: "10px 14px", borderRadius: 6, border: "1px solid #cbd5e0", marginBottom: 16, boxSizing: "border-box" }} />
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {registrosFiltrados.map(r => (
+            <div key={r.id} style={{ background: "#fff", padding: 16, borderRadius: 8, boxShadow: "0 2px 4px rgba(0,0,0,0.02)", border: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ flex: 1 }}>
+                <h4 style={{ margin: "0 0 4px 0", color: "#2d3748" }}>{r.productor}</h4>
+                <p style={{ margin: 0, fontSize: 13, color: "#718096" }}>{r.kilos} kg | ${parseFloat(r.precio_kilo).toLocaleString("es-CO")}/kg</p>
+                <p style={{ margin: "4px 0 0 0", fontSize: 14, fontWeight: "bold", color: "#1a5c38" }}>Total: ${parseFloat(r.total).toLocaleString("es-CO")}</p>
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button onClick={() => setReciboActual(r)} style={{ padding: "6px 12px", background: "#edf2f7", border: "none", borderRadius: 4, cursor: "pointer", fontSize: 13 }}>Ver Recibo</button>
+                <button onClick={() => editarAcopio(r)} style={{ padding: "6px 12px", background: "#feebc8", color: "#c05621", border: "none", borderRadius: 4, cursor: "pointer", fontSize: 13 }}>Editar</button> <button onClick={() => eliminarAcopio(r.id)} style={{ padding: "6px 12px", background: "#fed7d7", color: "#9b2c2c", border: "none", borderRadius: 4, cursor: "pointer", fontSize: 13 }}>X))});}export default Acopio;
