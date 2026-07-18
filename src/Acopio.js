@@ -170,14 +170,35 @@ function Acopio({ usuario }) {
               {reciboActual.observaciones && <p><strong>Observaciones:</strong> {reciboActual.observaciones}</p>}
             </div>
           </div>
-          <button 
-            onClick={() => compartirEImprimir(reciboActual)}
-            style={{ width: "100%", padding: "14px", backgroundColor: "#007AFF", color: "#fff", border: "none", borderRadius: "10px", fontSize: "16px", fontWeight: "bold", cursor: "pointer", boxShadow: "0px 4px 6px rgba(0,0,0,0.1)", marginBottom: "20px" }}
-          >
-            🖨️ Enviar a BR RawPrinter / Compartir
-          </button>
-        </div>
-      )}
+          const compartirEImprimir = async (e, r) => {
+    if (e && e.preventDefault) e.preventDefault();
+    
+    const elemento = reciboRef.current;
+    if (!elemento) return;
+    
+    try {
+      const canvas = await html2canvas(elemento, { scale: 2, backgroundColor: "#ffffff" });
+      const imagen = canvas.toDataURL("image/png");
+      const blob = await (await fetch(imagen)).blob();
+      const file = new File([blob], "recibo_san_pablo.png", { type: "image/png" });
+
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      const esMovil = /iPad|iPhone|iPod|android/i.test(userAgent);
+
+      if (esMovil && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ 
+          files: [file], 
+          title: "Recibo Agropecuarios San Pablo",
+          text: "Imprimir comprobante en Mini-Printer"
+        });
+      } else {
+        const urlTemporal = URL.createObjectURL(file);
+        window.open(urlTemporal, "_blank");
+      }
+    } catch (error) {
+      console.error("Error al procesar la imagen:", error);
+      const telefono = r.telefono ? r.telefono.replace(/\D/g, "") : "";
+      const url = telefono ? `
 
       <div style={{ background: "#fff", padding: 24, borderRadius: 12, boxShadow: "0 4px 6px rgba(0,0,0,0.05)" }}>
         <h2 style={{ color: "#1a5c38", marginTop: 0 }}>{editandoId ? "Editar Registro" : "Nuevo Registro de Acopio"}</h2>
