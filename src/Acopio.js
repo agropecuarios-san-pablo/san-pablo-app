@@ -261,7 +261,7 @@ const compartirEImprimir = (e, r) => {
             </div>
           </div>
           
-          <button 
+          <button type="button"
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); compartirEImprimir(e, reciboActual); }}
             style={{
               width: "100%", padding: "14px", backgroundColor: "#007AFF", 
