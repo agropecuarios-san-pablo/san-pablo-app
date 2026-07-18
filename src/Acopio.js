@@ -169,34 +169,38 @@ function Acopio({ usuario }) {
               </div>
               {reciboActual.observaciones && <p><strong>Observaciones:</strong> {reciboActual.observaciones}</p>}
             </div>
-          </div>
-          const compartirEImprimir = async (e, r) => {
+         const compartirEImprimir = async (e, r) => {
     if (e && e.preventDefault) e.preventDefault();
     
     const elemento = reciboRef.current;
     if (!elemento) return;
     
     try {
+      // Captura la imagen del recibo en alta resolución
       const canvas = await html2canvas(elemento, { scale: 2, backgroundColor: "#ffffff" });
-      const imagen = canvas.toDataURL("image/png");
-      const blob = await (await fetch(imagen)).blob();
-      const file = new File([blob], "recibo_san_pablo.png", { type: "image/png" });
+      const imagenBase64 = canvas.toDataURL("image/png");
 
       const userAgent = navigator.userAgent || navigator.vendor || window.opera;
       const esMovil = /iPad|iPhone|iPod|android/i.test(userAgent);
 
-      if (esMovil && navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ 
-          files: [file], 
-          title: "Recibo Agropecuarios San Pablo",
-          text: "Imprimir comprobante en Mini-Printer"
-        });
+      if (esMovil) {
+        // Codifica el PNG para enviarlo directo por la URL interna de iOS
+        const imagenCodificada = encodeURIComponent(imagenBase64);
+        
+        // Comando directo que abre BR RawPrinter en el iPhone
+        const esquemaiOS = `brrawprinter://print?base64=${imagenCodificada}`;
+        window.location.href = esquemaiOS;
       } else {
-        const urlTemporal = URL.createObjectURL(file);
+        // Respaldo para PC: Abre la imagen en una pestaña limpia
+        const blob = await (await fetch(imagenBase64)).blob();
+        const urlTemporal = URL.createObjectURL(blob);
         window.open(urlTemporal, "_blank");
       }
     } catch (error) {
-      console.error("Error al procesar la imagen:", error);
+      console.error("Error al procesar la imagen para la ticketera:", error);
+      alert("Hubo un problema al conectar con BR RawPrinter.");
+    }
+  };
       const telefono = r.telefono ? r.telefono.replace(/\D/g, "") : "";
       const url = telefono ? `
 
