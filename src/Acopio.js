@@ -87,7 +87,6 @@ const compartirEImprimir = (e, r) => {
     if (e && e.preventDefault) e.preventDefault();
     if (!r) return;
     
-    // Estructuramos el ticket en texto plano separado por saltos de línea (\n)
     const textoTicket = 
       `   AGROPECUARIOS SAN PABLO   \n` +
       ` Sistema de Acopio de Cacao  \n` +
@@ -110,28 +109,10 @@ const compartirEImprimir = (e, r) => {
       (r.observaciones ? `Obs: ${r.observaciones}\n` : "") +
       `   Gracias por su confianza  \n\n\n`;
 
-    // Codificamos el texto de forma segura para la URL de iOS
     const textoCodificado = encodeURIComponent(textoTicket);
-    
-    // Esquema de URL registrado por BR RawPrinter para imprimir texto directo
     const esquemaiOS = `brrawprinter://print?text=${textoCodificado}`;
-    
-    // Forzamos al iPhone a saltar a la aplicación nativa de inmediato
     window.location.href = esquemaiOS;
   };
- 
-      } else {
-        const urlTemporal = URL.createObjectURL(file);
-        window.open(urlTemporal, "_blank");
-      }
-    } catch (error) {
-      console.error("Error al procesar la imagen:", error);
-      const telefono = r.telefono ? r.telefono.replace(/\D/g, "") : "";
-      const url = telefono ? `https://wa.me{telefono}` : `https://wa.me`;
-      window.open(url, "_blank");
-    }
-  };
-
   const registrosFiltrados = registros.filter(r => r.productor.toLowerCase().includes(busquedaRegistros.toLowerCase()));
   const hoy = registros.filter(r => new Date(r.created_at).toDateString() === new Date().toDateString());
   const kilosHoy = hoy.reduce((sum, r) => sum + parseFloat(r.kilos || 0), 0);
