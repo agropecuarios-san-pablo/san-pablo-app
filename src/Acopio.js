@@ -83,26 +83,43 @@ function Acopio({ usuario }) {
     await supabase.from("acopios").delete().eq("id", id);
     cargarRegistros();
   };
-
-  const compartirEImprimir = async (r) => {
-    const elemento = reciboRef.current;
-    if (!elemento) return;
+const compartirEImprimir = (e, r) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!r) return;
     
-    try {
-      const canvas = await html2canvas(elemento, { scale: 2, backgroundColor: "#ffffff" });
-      const imagen = canvas.toDataURL("image/png");
-      const blob = await (await fetch(imagen)).blob();
-      const file = new File([blob], "recibo_san_pablo.png", { type: "image/png" });
+    // Estructuramos el ticket en texto plano separado por saltos de línea (\n)
+    const textoTicket = 
+      `   AGROPECUARIOS SAN PABLO   \n` +
+      ` Sistema de Acopio de Cacao  \n` +
+      `=============================\n` +
+      `RECIBO DE COMPRA\n` +
+      `Fecha: ${new Date(r.created_at).toLocaleDateString("es-CO")}\n` +
+      `Hora: ${new Date(r.created_at).toLocaleTimeString("es-CO")}\n` +
+      `-----------------------------\n` +
+      `Productor: ${r.productor}\n` +
+      `Cedula: ${r.cedula}\n` +
+      `Telefono: ${r.telefono || "N/A"}\n` +
+      `Vereda: ${r.vereda || "N/A"}\n` +
+      `Finca: ${r.finca || "N/A"}\n` +
+      `=============================\n` +
+      `Kilos comprados: ${r.kilos} kg\n` +
+      `Valor por kilo: $${parseFloat(r.precio_kilo).toLocaleString("es-CO")}\n` +
+      `-----------------------------\n` +
+      `TOTAL A PAGAR: $${parseFloat(r.total).toLocaleString("es-CO")}\n` +
+      `=============================\n` +
+      (r.observaciones ? `Obs: ${r.observaciones}\n` : "") +
+      `   Gracias por su confianza  \n\n\n`;
 
-      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-      const esMovil = /iPad|iPhone|iPod|android/i.test(userAgent);
-
-      if (esMovil && navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ 
-          files: [file], 
-          title: "Recibo Agropecuarios San Pablo",
-          text: "Imprimir comprobante en Mini-Printer"
-        });
+    // Codificamos el texto de forma segura para la URL de iOS
+    const textoCodificado = encodeURIComponent(textoTicket);
+    
+    // Esquema de URL registrado por BR RawPrinter para imprimir texto directo
+    const esquemaiOS = `brrawprinter://print?text=${textoCodificado}`;
+    
+    // Forzamos al iPhone a saltar a la aplicación nativa de inmediato
+    window.location.href = esquemaiOS;
+  };
+ 
       } else {
         const urlTemporal = URL.createObjectURL(file);
         window.open(urlTemporal, "_blank");
