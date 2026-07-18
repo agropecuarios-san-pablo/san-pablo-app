@@ -201,8 +201,81 @@ function Acopio({ usuario }) {
       alert("Hubo un problema al conectar con BR RawPrinter.");
     }
   };
-      const telefono = r.telefono ? r.telefono.replace(/\D/g, "") : "";
-      const url = telefono ? `
+      const registrosFiltrados = registros.filter(r => r.productor.toLowerCase().includes(busquedaRegistros.toLowerCase()));
+  const hoy = registros.filter(r => new Date(r.created_at).toDateString() === new Date().toDateString());
+  const kilosHoy = hoy.reduce((sum, r) => sum + parseFloat(r.kilos || 0), 0);
+  const totalHoy = hoy.reduce((sum, r) => sum + parseFloat(r.total || 0), 0);
+
+  return (
+    <div style={{ maxWidth: 700, margin: "40px auto", padding: 24 }}>
+      <div style={{ display: "flex", gap: 16, marginBottom: 24 }}>
+        <div style={{ flex: 1, background: "#1a5c38", color: "#fff", padding: 20, borderRadius: 12, textAlign: "center" }}>
+          <p style={{ margin: 0, fontSize: 13 }}>Kilos hoy</p>
+          <p style={{ margin: 0, fontSize: 26, fontWeight: "bold" }}>{kilosHoy.toFixed(1)} kg</p>
+        </div>
+        <div style={{ flex: 1, background: "#2b6cb0", color: "#fff", padding: 20, borderRadius: 12, textAlign: "center" }}>
+          <p style={{ margin: 0, fontSize: 13 }}>Total pagado hoy</p>
+          <p style={{ margin: 0, fontSize: 26, fontWeight: "bold" }}>${totalHoy.toLocaleString("es-CO")}</p>
+        </div>
+        <div style={{ flex: 1, background: "#744210", color: "#fff", padding: 20, borderRadius: 12, textAlign: "center" }}>
+          <p style={{ margin: 0, fontSize: 13 }}>Compras hoy</p>
+          <p style={{ margin: 0, fontSize: 26, fontWeight: "bold" }}>{hoy.length}</p>
+        </div>
+      </div>
+
+      {reciboActual && (
+        <div style={{ marginBottom: 30 }}>
+          <div id="recibo-imprimible" ref={reciboRef} style={{ background: "#fff", padding: 24, borderRadius: 12, marginBottom: 16, border: "2px solid #1a5c38", position: "relative", overflow: "hidden" }}>
+            <img
+              src="/logo.jpg"
+              alt=""
+              className="marca-agua"
+              style={{
+                position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
+                width: "100%", height: "100%", objectFit: "contain",
+                opacity: 0.12, zIndex: 0, pointerEvents: "none"
+              }}
+              onError={(e) => { e.target.style.display = "none"; }}
+            />
+            <div style={{ position: "relative", zIndex: 1, color: "#000" }}>
+              <div style={{ textAlign: "center", marginBottom: 16 }}>
+                <h2 style={{ color: "#1a5c38", margin: 0 }}>Agropecuarios San Pablo</h2>
+                <p style={{ color: "#666", margin: 4 }}>Sistema de Acopio de Cacao</p>
+                <hr />
+                <h3>RECIBO DE COMPRA</h3>
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <p><strong>Fecha:</strong> {new Date(reciboActual.created_at).toLocaleDateString("es-CO")}</p>
+                <p><strong>Hora:</strong> {new Date(reciboActual.created_at).toLocaleTimeString("es-CO")}</p>
+                <p><strong>Productor:</strong> {reciboActual.productor}</p>
+                <p><strong>Cédula:</strong> {reciboActual.cedula}</p>
+                <p><strong>Teléfono:</strong> {reciboActual.telefono}</p>
+                <p><strong>Vereda:</strong> {reciboActual.vereda}</p>
+                <p><strong>Finca:</strong> {reciboActual.finca}</p>
+              </div>
+              <hr />
+              <div style={{ marginBottom: 12 }}>
+                <p><strong>Kilos comprados:</strong> {reciboActual.kilos} kg</p>
+                <p><strong>Valor por kilo:</strong> ${parseFloat(reciboActual.precio_kilo).toLocaleString("es-CO")}</p>
+                <p style={{ fontSize: 20, color: "#1a5c38" }}><strong>TOTAL A PAGAR: ${parseFloat(reciboActual.total).toLocaleString("es-CO")}</strong></p>
+              </div>
+              {reciboActual.observaciones && <p><strong>Observaciones:</strong> {reciboActual.observaciones}</p>}
+            </div>
+          </div>
+          
+          <button 
+            onClick={(e) => compartirEImprimir(e, reciboActual)}
+            style={{
+              width: "100%", padding: "14px", backgroundColor: "#007AFF", 
+              color: "#fff", border: "none", borderRadius: "10px", 
+              fontSize: "16px", fontWeight: "bold", cursor: "pointer",
+              boxShadow: "0px 4px 6px rgba(0,0,0,0.1)", marginBottom: "20px"
+            }}
+          >
+            🖨️ Enviar a BR RawPrinter / Compartir
+          </button>
+        </div>
+      )}
 
       <div style={{ background: "#fff", padding: 24, borderRadius: 12, boxShadow: "0 4px 6px rgba(0,0,0,0.05)" }}>
         <h2 style={{ color: "#1a5c38", marginTop: 0 }}>{editandoId ? "Editar Registro" : "Nuevo Registro de Acopio"}</h2>
