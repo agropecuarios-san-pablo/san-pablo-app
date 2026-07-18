@@ -120,6 +120,47 @@ const compartirEImprimir = (e, r) => {
     // Forzamos al navegador a saltar directo a la aplicación externa
     window.location.href = esquemaiOS;
   };
+  const descargarTicketTXT = (e, r) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (e && e.stopPropagation) e.stopPropagation();
+    if (!r) return;
+
+    // Estructura limpia del ticket en texto plano para impresoras térmicas
+    const textoTicket = 
+      `   AGROPECUARIOS SAN PABLO   \n` +
+      ` Sistema de Acopio de Cacao  \n` +
+      `=============================\n` +
+      `      RECIBO DE COMPRA       \n` +
+      `Fecha: ${new Date(r.created_at).toLocaleDateString("es-CO")}\n` +
+      `Hora: ${new Date(r.created_at).toLocaleTimeString("es-CO")}\n` +
+      `-----------------------------\n` +
+      `Productor: ${r.productor}\n` +
+      `Cédula: ${r.cedula}\n` +
+      `Teléfono: ${r.telefono || "N/A"}\n` +
+      `Vereda: ${r.vereda || "N/A"}\n` +
+      `Finca: ${r.finca || "N/A"}\n` +
+      `=============================\n` +
+      `Kilos comprados: ${r.kilos} kg\n` +
+      `Valor por kilo: $${parseFloat(r.precio_kilo).toLocaleString("es-CO")}\n` +
+      `-----------------------------\n` +
+      `TOTAL A PAGAR: $${parseFloat(r.total).toLocaleString("es-CO")}\n` +
+      `=============================\n` +
+      (r.observaciones ? `Obs: ${r.observaciones}\n` : "") +
+      `  ¡Gracias por su confianza!  \n\n\n`;
+
+    // Creamos el archivo de texto en la memoria del navegador
+    const blob = new Blob([textoTicket], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    
+    // Forzamos la descarga automática del archivo en el iPhone
+    const enlace = document.createElement("a");
+    enlace.href = url;
+    enlace.download = `recibo_cacao_${r.id || "ticket"}.txt`; // Se puede cambiar a .bin si la ticketera lo pide
+    document.body.appendChild(enlace);
+    enlace.click();
+    document.body.removeChild(enlace);
+    URL.revokeObjectURL(url);
+  };
   const registrosFiltrados = registros.filter(r => r.productor.toLowerCase().includes(busquedaRegistros.toLowerCase()));
   const hoy = registros.filter(r => new Date(r.created_at).toDateString() === new Date().toDateString());
   const kilosHoy = hoy.reduce((sum, r) => sum + parseFloat(r.kilos || 0), 0);
@@ -280,6 +321,18 @@ const compartirEImprimir = (e, r) => {
             🖨️ Enviar a BR RawPrinter / Compartir
           </button>
         </div>
+<button 
+            type="button"
+            onClick={(e) => descargarTicketTXT(e, reciboActual)}
+            style={{
+              width: "100%", padding: "14px", backgroundColor: "#718096",
+              color: "#fff", border: "none", borderRadius: "10px", 
+              fontSize: "16px", fontWeight: "bold", cursor: "pointer",
+              boxShadow: "0px 4px 6px rgba(0,0,0,0.1)", marginBottom: "20px"
+            }}
+          >
+            💾 Descargar archivo (.txt) para Ticketera
+          </button>
       )}
 
       <div style={{ background: "#fff", padding: 24, borderRadius: 12, boxShadow: "0 4px 6px rgba(0,0,0,0.05)" }}>
