@@ -262,7 +262,7 @@ const compartirEImprimir = (e, r) => {
           </div>
           
           <button 
-            onClick={(e) => compartirEImprimir(e, reciboActual)}
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); compartirEImprimir(e, reciboActual); }}
             style={{
               width: "100%", padding: "14px", backgroundColor: "#007AFF", 
               color: "#fff", border: "none", borderRadius: "10px", 
