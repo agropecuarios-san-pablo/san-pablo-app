@@ -85,19 +85,21 @@ function Acopio({ usuario }) {
   };
 const compartirEImprimir = (e, r) => {
     if (e && e.preventDefault) e.preventDefault();
+    if (e && e.stopPropagation) e.stopPropagation();
     if (!r) return;
     
+    // Formateamos el ticket comercial en texto plano con saltos de línea (\n)
     const textoTicket = 
       `   AGROPECUARIOS SAN PABLO   \n` +
       ` Sistema de Acopio de Cacao  \n` +
       `=============================\n` +
-      `RECIBO DE COMPRA\n` +
+      `      RECIBO DE COMPRA       \n` +
       `Fecha: ${new Date(r.created_at).toLocaleDateString("es-CO")}\n` +
       `Hora: ${new Date(r.created_at).toLocaleTimeString("es-CO")}\n` +
       `-----------------------------\n` +
       `Productor: ${r.productor}\n` +
-      `Cedula: ${r.cedula}\n` +
-      `Telefono: ${r.telefono || "N/A"}\n` +
+      `Cédula: ${r.cedula}\n` +
+      `Teléfono: ${r.telefono || "N/A"}\n` +
       `Vereda: ${r.vereda || "N/A"}\n` +
       `Finca: ${r.finca || "N/A"}\n` +
       `=============================\n` +
@@ -107,10 +109,15 @@ const compartirEImprimir = (e, r) => {
       `TOTAL A PAGAR: $${parseFloat(r.total).toLocaleString("es-CO")}\n` +
       `=============================\n` +
       (r.observaciones ? `Obs: ${r.observaciones}\n` : "") +
-      `   Gracias por su confianza  \n\n\n`;
+      `  ¡Gracias por su confianza!  \n\n\n`;
 
+    // Codificamos el texto plano para que viaje seguro por la URL de iOS
     const textoCodificado = encodeURIComponent(textoTicket);
+    
+    // Protocolo directo que exige BR RawPrinter para recibir texto plano
     const esquemaiOS = `brrawprinter://print?text=${textoCodificado}`;
+    
+    // Forzamos al navegador a saltar directo a la aplicación externa
     window.location.href = esquemaiOS;
   };
   const registrosFiltrados = registros.filter(r => r.productor.toLowerCase().includes(busquedaRegistros.toLowerCase()));
