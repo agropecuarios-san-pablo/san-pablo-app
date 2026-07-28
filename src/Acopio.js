@@ -107,7 +107,7 @@ function Acopio({ usuario }) {
 
   return (
     <div style={{ maxWidth: 700, margin: "40px auto", padding: 24 }}>
-      <div style={{ display: "flex", gap: 16, marginBottom: 24 }}>
+      <div className="no-imprimir" style={{ display: "flex", gap: 16, marginBottom: 24 }}>
         <div style={{ flex: 1, background: "#1a5c38", color: "#fff", padding: 20, borderRadius: 12, textAlign: "center" }}>
           <p style={{ margin: 0, fontSize: 13 }}>Kilos hoy</p>
           <p style={{ margin: 0, fontSize: 26, fontWeight: "bold" }}>{kilosHoy.toFixed(1)} kg</p>
@@ -169,7 +169,7 @@ function Acopio({ usuario }) {
             {reciboActual.observaciones && <p><strong>Observaciones:</strong> {reciboActual.observaciones}</p>}
             </div>
           </div>
-          <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
+          <div className="no-imprimir" style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
             <button onClick={() => window.print()} style={{ flex: 1, padding: "10px 16px", background: "#1a5c38", color: "#fff", border: "none", borderRadius: 8, fontSize: 15, cursor: "pointer" }}>Imprimir</button>
             <button onClick={() => compartirImagenWhatsApp(reciboActual)} style={{ flex: 1, padding: "10px 16px", background: "#25D366", color: "#fff", border: "none", borderRadius: 8, fontSize: 15, cursor: "pointer" }}>Compartir WhatsApp</button>
             <button onClick={() => setReciboActual(null)} style={{ flex: 1, padding: "10px 16px", background: "#ccc", border: "none", borderRadius: 8, fontSize: 15, cursor: "pointer" }}>Cerrar</button>
@@ -177,7 +177,7 @@ function Acopio({ usuario }) {
         </div>
       )}
 
-      <div style={{ background: "#fff", padding: 24, borderRadius: 12, marginBottom: 24 }}>
+      <div className="no-imprimir" style={{ background: "#fff", padding: 24, borderRadius: 12, marginBottom: 24 }}>
         <h3>{editandoId ? "Editar acopio" : "Nuevo registro"}</h3>
         <div style={{ position: "relative", marginBottom: 12 }}>
           <input placeholder="Buscar productor..." value={busqueda} onChange={e => { setBusqueda(e.target.value); setMostrarSugerencias(true); setProductorSeleccionado(null); }} style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid #ccc", boxSizing: "border-box" }} />
@@ -214,7 +214,7 @@ function Acopio({ usuario }) {
         {mensaje && <p style={{ marginTop: 12, textAlign: "center", color: mensaje.includes("Error") ? "red" : "green" }}>{mensaje}</p>}
       </div>
 
-      <div style={{ background: "#fff", padding: 24, borderRadius: 12 }}>
+      <div className="no-imprimir" style={{ background: "#fff", padding: 24, borderRadius: 12 }}>
         <h3>Registros recientes</h3>
         <input placeholder="Buscar por nombre de productor..." value={busquedaRegistros} onChange={e => setBusquedaRegistros(e.target.value)} style={{ width: "100%", padding: 10, marginBottom: 12, borderRadius: 8, border: "1px solid #ccc", boxSizing: "border-box" }} />
         {registrosFiltrados.length === 0 ? <p style={{ color: "#999" }}>No hay registros.</p> : (
