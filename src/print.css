@@ -28,10 +28,10 @@
     position: absolute;
     top: 0;
     left: 0;
-    width: 80mm;
-    max-width: 80mm;
+    width: 72mm;
+    max-width: 72mm;
     margin: 0 auto;
-    padding: 3mm 4mm;
+    padding: 0 2mm 2mm 4mm;
     box-sizing: border-box;
     border: none !important;
     border-radius: 0 !important;
