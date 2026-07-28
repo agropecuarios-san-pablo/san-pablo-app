@@ -150,7 +150,7 @@ function Acopio({ usuario }) {
         src="/logo.jpg"
         alt="Logo Agropecuarios San Pablo"
         className="logo-recibo"
-        style={{ maxWidth: 140, width: "100%", height: "auto", margin: "0 auto 8px auto", display: "block" }}
+        style={{ display: "none" }}
         onError={(e) => { e.target.style.display = "none"; }}
       />
       <h2 style={{ color: "#1a5c38", margin: 0 }}>Agropecuarios San Pablo</h2>

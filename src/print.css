@@ -72,16 +72,17 @@
     margin: 6px 0;
   }
 
-  /* Logo sólido al inicio del recibo, nítido para impresión térmica */
+  /* Logo solido y circular, visible SOLO al imprimir (en pantalla permanece oculto) */
   #recibo-imprimible .logo-recibo {
-    max-width: 35mm;
-    width: 100%;
-    height: auto;
+    display: block !important;
+    width: 30mm;
+    height: 30mm;
+    object-fit: cover;
+    border-radius: 50%;
     margin: 0 auto 3px auto;
-    display: block;
   }
 
-  /* Ocultamos la marca de agua al imprimir: mejora la nitidez del texto y ahorra tinta/tóner térmico */
+  /* Ocultamos la marca de agua al imprimir: mejora la nitidez del texto y ahorra tinta/toner termico */
   #recibo-imprimible .marca-agua {
     display: none !important;
   }
